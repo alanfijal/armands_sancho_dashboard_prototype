@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armadans Sancho — Smart Green Lease Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:wght@200;300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --carbon: #0a0a08;
+    --concrete: #131311;
+    --aggregate: #1e1d1a;
+    --stone: #2a2825;
+    --chalk: #e8e2d4;
+    --chalk-dim: #8a8578;
+    --chalk-mid: #b5ad9e;
+    --amber: #e8a925;
+    --amber-glow: #f5c542;
+    --amber-dim: rgba(232,169,37,0.12);
+    --green: #3ddc84;
+    --green-dim: rgba(61,220,132,0.1);
+    --green-muted: #1a6b3a;
+    --red: #e84545;
+    --red-dim: rgba(232,69,69,0.1);
+    --blue: #45a5e8;
+    --blue-dim: rgba(69,165,232,0.1);
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Crimson Pro', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  html { scrollbar-width: thin; scrollbar-color: var(--stone) var(--carbon); }
+
+  body {
+    background: var(--carbon);
+    color: var(--chalk);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Grain */
+  body::after {
+    content:'';
+    position:fixed;inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events:none;z-index:9999;
+  }
+
+  /* ── Layout Shell ── */
+  .shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 56px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Top Bar ── */
+  .topbar {
+    grid-column: 1 / -1;
+    background: var(--concrete);
+    border-bottom: 1px solid var(--aggregate);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 10;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--chalk);
+    letter-spacing: -0.5px;
+  }
+
+  .brand em { color: var(--amber); font-style: italic; }
+
+  .topbar-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--stone);
+  }
+
+  .topbar-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  .pulse-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(61,220,132,0.4); }
+    50% { opacity:0.7; box-shadow: 0 0 0 6px rgba(61,220,132,0); }
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .topbar-time {
+    color: var(--chalk-dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .topbar-badge {
+    padding: 4px 10px;
+    border: 1px solid var(--amber-dim);
+    color: var(--amber);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: var(--concrete);
+    border-right: 1px solid var(--aggregate);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 0 16px;
+    margin-bottom: 24px;
+  }
+
+  .sidebar-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-bottom: 10px;
+    padding: 0 8px;
+  }
+
+  .building-list {
+    list-style: none;
+  }
+
+  .building-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    margin-bottom: 1px;
+  }
+
+  .building-item:hover {
+    background: var(--aggregate);
+  }
+
+  .building-item.active {
+    background: var(--aggregate);
+    border-left-color: var(--amber);
+  }
+
+  .building-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .building-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .building-name {
+    font-size: 12px;
+    color: var(--chalk);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .building-addr {
+    font-size: 10px;
+    color: var(--chalk-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .building-score {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  /* Sidebar alerts */
+  .alert-list {
+    list-style: none;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--red);
+    margin-bottom: 2px;
+    background: var(--red-dim);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .alert-item:hover { background: rgba(232,69,69,0.15); }
+
+  .alert-item.warn {
+    border-left-color: var(--amber);
+    background: var(--amber-dim);
+  }
+
+  .alert-item.warn:hover { background: rgba(232,169,37,0.18); }
+
+  .alert-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+  .alert-text { font-size: 11px; color: var(--chalk-mid); line-height: 1.4; }
+  .alert-time { font-size: 9px; color: var(--chalk-dim); margin-top: 2px; display: block; }
+
+  /* Sidebar stats */
+  .sidebar-stats {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid var(--aggregate);
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+  }
+
+  .stat-label { font-size: 10px; color: var(--chalk-dim); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-val { font-size: 11px; color: var(--chalk-mid); }
+
+  /* ── Main Content ── */
+  .main {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Metric Strip ── */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+
+  .metric-card {
+    background: var(--concrete);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .metric-card:hover { background: var(--aggregate); }
+
+  .metric-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    transition: background 0.3s;
+  }
+
+  .metric-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .metric-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+
+  .metric-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .metric-value {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .metric-unit {
+    font-size: 11px;
+    color: var(--chalk-dim);
+  }
+
+  .metric-spark {
+    margin-top: 12px;
+    height: 32px;
+  }
+
+  .metric-spark canvas {
+    width: 100%;
+    height: 32px;
+    display: block;
+  }
+
+  /* ── Charts Row ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2px;
+  }
+
+  .chart-panel {
+    background: var(--concrete);
+    padding: 24px;
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+  }
+
+  .panel-legend {
+    display: flex;
+    gap: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--chalk-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .legend-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .main-canvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+  }
+
+  /* ── Gauge Panel ── */
+  .gauge-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .gauge-item {
+    text-align: center;
+  }
+
+  .gauge-canvas {
+    width: 120px;
+    height: 70px;
+    display: block;
+    margin: 0 auto 8px;
+  }
+
+  .gauge-value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .gauge-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-top: 2px;
+  }
+
+  /* ── Bottom Row ── */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  /* ── Maintenance Log ── */
+  .log-panel {
+    background: var(--concrete);
+    padding: 24px;
+  }
+
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .log-table th {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    text-align: left;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--aggregate);
+  }
+
+  .log-table td {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--aggregate);
+    font-size: 12px;
+    color: var(--chalk-mid);
+    vertical-align: middle;
+  }
+
+  .log-table tr:last-child td { border-bottom: none; }
+
+  .log-type {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .log-proactive { background: var(--green-dim); color: var(--green); }
+  .log-reactive { background: var(--red-dim); color: var(--red); }
+  .log-scheduled { background: var(--blue-dim); color: var(--blue); }
+
+  /* ── Energy Savings Panel ── */
+  .savings-panel {
+    background: var(--concrete);
+    padding: 24px;
+  }
+
+  .savings-big {
+    text-align: center;
+    padding: 20px 0 24px;
+  }
+
+  .savings-amount {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .savings-sub {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--chalk-dim);
+    margin-top: 6px;
+  }
+
+  .savings-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .sbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sbar-label {
+    width: 70px;
+    font-size: 10px;
+    color: var(--chalk-dim);
+    text-align: right;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+
+  .sbar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--aggregate);
+    overflow: hidden;
+  }
+
+  .sbar-fill {
+    height: 100%;
+    transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .sbar-val {
+    width: 50px;
+    font-size: 11px;
+    color: var(--chalk-mid);
+    flex-shrink: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .metric-strip { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+    .bottom-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ TOP BAR ═══ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">Armadans <em>Sancho</em></div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-status">
+        <span class="pulse-dot"></span>
+        Live Monitoring
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="clock"></span>
+      <span class="topbar-badge">Pilot Cohort</span>
+    </div>
+  </header>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Buildings</div>
+      <ul class="building-list" id="buildingList">
+        <li class="building-item active" data-id="0">
+          <span class="building-dot" style="background:var(--green)"></span>
+          <div class="building-info">
+            <div class="building-name">Carrer de Mallorca, 247</div>
+            <div class="building-addr">Eixample — 12 units</div>
+          </div>
+          <span class="building-score" style="color:var(--green)">92</span>
+        </li>
+        <li class="building-item" data-id="1">
+          <span class="building-dot" style="background:var(--amber)"></span>
+          <div class="building-info">
+            <div class="building-name">Rambla del Poblenou, 88</div>
+            <div class="building-addr">Sant Martí — 8 units</div>
+          </div>
+          <span class="building-score" style="color:var(--amber)">71</span>
+        </li>
+        <li class="building-item" data-id="2">
+          <span class="building-dot" style="background:var(--red)"></span>
+          <div class="building-info">
+            <div class="building-name">Carrer de Sants, 134</div>
+            <div class="building-addr">Sants — 16 units</div>
+          </div>
+          <span class="building-score" style="color:var(--red)">48</span>
+        </li>
+        <li class="building-item" data-id="3">
+          <span class="building-dot" style="background:var(--green)"></span>
+          <div class="building-info">
+            <div class="building-name">Via Laietana, 56</div>
+            <div class="building-addr">Ciutat Vella — 6 units</div>
+          </div>
+          <span class="building-score" style="color:var(--green)">87</span>
+        </li>
+        <li class="building-item" data-id="4">
+          <span class="building-dot" style="background:var(--amber)"></span>
+          <div class="building-info">
+            <div class="building-name">Passeig de Gràcia, 15</div>
+            <div class="building-addr">Gràcia — 10 units</div>
+          </div>
+          <span class="building-score" style="color:var(--amber)">68</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Active Alerts</div>
+      <ul class="alert-list" id="alertList">
+        <li class="alert-item">
+          <span class="alert-icon">▲</span>
+          <div>
+            <div class="alert-text">CO₂ spike detected — Sants 134, Unit 3B</div>
+            <span class="alert-time">2 min ago</span>
+          </div>
+        </li>
+        <li class="alert-item warn">
+          <span class="alert-icon">◆</span>
+          <div>
+            <div class="alert-text">Boiler efficiency drop — Poblenou 88</div>
+            <span class="alert-time">18 min ago</span>
+          </div>
+        </li>
+        <li class="alert-item warn">
+          <span class="alert-icon">◆</span>
+          <div>
+            <div class="alert-text">Humidity rising — Sants 134, Unit 1A</div>
+            <span class="alert-time">34 min ago</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-stats">
+      <div class="stat-row">
+        <span class="stat-label">Sensors Online</span>
+        <span class="stat-val" style="color:var(--green)">47 / 52</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Uptime</span>
+        <span class="stat-val">99.2%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Readings Today</span>
+        <span class="stat-val" id="readingsToday">12,847</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+
+    <!-- Metric Strip -->
+    <div class="metric-strip">
+      <div class="metric-card" id="co2Card">
+        <div class="metric-top">
+          <span class="metric-label">CO₂</span>
+          <span class="metric-badge" id="co2Badge" style="background:var(--green-dim);color:var(--green)">Optimal</span>
+        </div>
+        <div class="metric-value" id="co2Val" style="color:var(--green)">412</div>
+        <div class="metric-unit">ppm</div>
+        <div class="metric-spark"><canvas id="sparkCo2"></canvas></div>
+        <div class="metric-card__after" style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
+      </div>
+
+      <div class="metric-card" id="tempCard">
+        <div class="metric-top">
+          <span class="metric-label">Temperature</span>
+          <span class="metric-badge" id="tempBadge" style="background:var(--green-dim);color:var(--green)">Comfort</span>
+        </div>
+        <div class="metric-value" id="tempVal" style="color:var(--green)">21.4</div>
+        <div class="metric-unit">°C</div>
+        <div class="metric-spark"><canvas id="sparkTemp"></canvas></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
+      </div>
+
+      <div class="metric-card" id="humidCard">
+        <div class="metric-top">
+          <span class="metric-label">Humidity</span>
+          <span class="metric-badge" id="humidBadge" style="background:var(--green-dim);color:var(--green)">Ideal</span>
+        </div>
+        <div class="metric-value" id="humidVal" style="color:var(--green)">48</div>
+        <div class="metric-unit">%RH</div>
+        <div class="metric-spark"><canvas id="sparkHumid"></canvas></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Energy Draw</span>
+          <span class="metric-badge" id="energyBadge" style="background:var(--amber-dim);color:var(--amber)">Elevated</span>
+        </div>
+        <div class="metric-value" id="energyVal" style="color:var(--amber)">3.2</div>
+        <div class="metric-unit">kWh / hr</div>
+        <div class="metric-spark"><canvas id="sparkEnergy"></canvas></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-panel">
+        <div class="panel-header">
+          <span class="panel-title">24-Hour Trend</span>
+          <div class="panel-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>CO₂</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Temp</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Humidity</div>
+          </div>
+        </div>
+        <canvas class="main-canvas" id="trendChart"></canvas>
+      </div>
+
+      <div class="chart-panel">
+        <div class="panel-header">
+          <span class="panel-title">System Health</span>
+        </div>
+        <div class="gauge-grid">
+          <div class="gauge-item">
+            <canvas class="gauge-canvas" id="gaugeBoiler"></canvas>
+            <div class="gauge-value" id="gaugeBoilerVal" style="color:var(--amber)">76%</div>
+            <div class="gauge-label">Boiler Efficiency</div>
+          </div>
+          <div class="gauge-item">
+            <canvas class="gauge-canvas" id="gaugeInsulation"></canvas>
+            <div class="gauge-value" id="gaugeInsVal" style="color:var(--green)">88%</div>
+            <div class="gauge-label">Insulation Score</div>
+          </div>
+          <div class="gauge-item">
+            <canvas class="gauge-canvas" id="gaugeVent"></canvas>
+            <div class="gauge-value" id="gaugeVentVal" style="color:var(--green)">94%</div>
+            <div class="gauge-label">Ventilation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-row">
+      <!-- Maintenance Log -->
+      <div class="log-panel">
+        <div class="panel-header">
+          <span class="panel-title">Maintenance Activity</span>
+        </div>
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Action</th>
+              <th>Building</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="logBody">
+            <tr>
+              <td><span class="log-type log-proactive">Proactive</span></td>
+              <td>Boiler recalibration</td>
+              <td>Poblenou 88</td>
+              <td>12 Apr</td>
+            </tr>
+            <tr>
+              <td><span class="log-type log-proactive">Proactive</span></td>
+              <td>Ventilation filter swap</td>
+              <td>Sants 134</td>
+              <td>10 Apr</td>
+            </tr>
+            <tr>
+              <td><span class="log-type log-reactive">Reactive</span></td>
+              <td>Pipe leak — Unit 2A</td>
+              <td>Sants 134</td>
+              <td>8 Apr</td>
+            </tr>
+            <tr>
+              <td><span class="log-type log-scheduled">Scheduled</span></td>
+              <td>Annual boiler service</td>
+              <td>Mallorca 247</td>
+              <td>5 Apr</td>
+            </tr>
+            <tr>
+              <td><span class="log-type log-proactive">Proactive</span></td>
+              <td>Humidity sensor trigger — dehumidifier deployed</td>
+              <td>Gràcia 15</td>
+              <td>3 Apr</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Energy Savings -->
+      <div class="savings-panel">
+        <div class="panel-header">
+          <span class="panel-title">Green Lease — Monthly Savings</span>
+        </div>
+        <div class="savings-big">
+          <div class="savings-amount" id="totalSavings">€1,247</div>
+          <div class="savings-sub">Estimated across pilot cohort</div>
+        </div>
+        <div class="savings-bars">
+          <div class="sbar-row">
+            <span class="sbar-label">Mallorca</span>
+            <div class="sbar-track"><div class="sbar-fill" style="width:72%;background:var(--green)"></div></div>
+            <span class="sbar-val">€384</span>
+          </div>
+          <div class="sbar-row">
+            <span class="sbar-label">Poblenou</span>
+            <div class="sbar-track"><div class="sbar-fill" style="width:48%;background:var(--amber)"></div></div>
+            <span class="sbar-val">€256</span>
+          </div>
+          <div class="sbar-row">
+            <span class="sbar-label">Sants</span>
+            <div class="sbar-track"><div class="sbar-fill" style="width:35%;background:var(--red)"></div></div>
+            <span class="sbar-val">€187</span>
+          </div>
+          <div class="sbar-row">
+            <span class="sbar-label">Laietana</span>
+            <div class="sbar-track"><div class="sbar-fill" style="width:58%;background:var(--green)"></div></div>
+            <span class="sbar-val">€244</span>
+          </div>
+          <div class="sbar-row">
+            <span class="sbar-label">Gràcia</span>
+            <div class="sbar-track"><div class="sbar-fill" style="width:42%;background:var(--amber)"></div></div>
+            <span class="sbar-val">€176</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) +
+    ' — ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Building Data Profiles ──
+const buildings = [
+  { name:'Mallorca 247', co2:412, temp:21.4, humid:48, energy:2.8, boiler:92, insulation:95, vent:97 },
+  { name:'Poblenou 88',  co2:580, temp:23.1, humid:55, energy:3.9, boiler:71, insulation:78, vent:82 },
+  { name:'Sants 134',    co2:820, temp:18.2, humid:72, energy:5.1, boiler:48, insulation:52, vent:61 },
+  { name:'Laietana 56',  co2:390, temp:21.8, humid:44, energy:2.4, boiler:88, insulation:91, vent:93 },
+  { name:'Gràcia 15',    co2:510, temp:22.6, humid:58, energy:3.4, boiler:68, insulation:74, vent:78 },
+];
+
+let activeBuilding = 0;
+const state = { co2:412, temp:21.4, humid:48, energy:2.8 };
+const history = { co2:[], temp:[], humid:[], energy:[] };
+const maxHist = 80;
+
+// Pre-fill history
+for(let i=0;i<maxHist;i++){
+  history.co2.push(400 + Math.random()*60);
+  history.temp.push(20 + Math.random()*3);
+  history.humid.push(44 + Math.random()*10);
+  history.energy.push(2.5 + Math.random()*1.2);
+}
+
+// ── Building Switcher ──
+document.querySelectorAll('.building-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelector('.building-item.active').classList.remove('active');
+    el.classList.add('active');
+    activeBuilding = parseInt(el.dataset.id);
+    const b = buildings[activeBuilding];
+    state.co2 = b.co2; state.temp = b.temp; state.humid = b.humid; state.energy = b.energy;
+    // Reset history for new building
+    history.co2 = []; history.temp = []; history.humid = []; history.energy = [];
+    for(let i=0;i<maxHist;i++){
+      history.co2.push(b.co2 + (Math.random()-0.5)*80);
+      history.temp.push(b.temp + (Math.random()-0.5)*3);
+      history.humid.push(b.humid + (Math.random()-0.5)*12);
+      history.energy.push(b.energy + (Math.random()-0.5)*1);
+    }
+    updateGauges(b.boiler, b.insulation, b.vent);
+    updateMetrics();
+    drawTrend();
+    drawAllSparks();
+  });
+});
+
+// ── Clamp ──
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+
+// ── Sensor Status Logic ──
+function co2Status(v) {
+  if(v<600) return { label:'Optimal', color:'var(--green)', bg:'var(--green-dim)' };
+  if(v<900) return { label:'Elevated', color:'var(--amber)', bg:'var(--amber-dim)' };
+  return { label:'Alert', color:'var(--red)', bg:'var(--red-dim)' };
+}
+function tempStatus(v) {
+  if(v>=19&&v<=24) return { label:'Comfort', color:'var(--green)', bg:'var(--green-dim)' };
+  if(v>=16&&v<=28) return { label:'Outside Range', color:'var(--amber)', bg:'var(--amber-dim)' };
+  return { label:'Thermal Alert', color:'var(--red)', bg:'var(--red-dim)' };
+}
+function humidStatus(v) {
+  if(v>=40&&v<=60) return { label:'Ideal', color:'var(--green)', bg:'var(--green-dim)' };
+  if(v>=30&&v<=70) return { label:'Monitor', color:'var(--amber)', bg:'var(--amber-dim)' };
+  return { label:'Risk', color:'var(--red)', bg:'var(--red-dim)' };
+}
+
+function updateMetrics() {
+  const co2 = co2Status(state.co2);
+  document.getElementById('co2Val').textContent = Math.round(state.co2);
+  document.getElementById('co2Val').style.color = co2.color;
+  document.getElementById('co2Badge').textContent = co2.label;
+  document.getElementById('co2Badge').style.background = co2.bg;
+  document.getElementById('co2Badge').style.color = co2.color;
+
+  const tmp = tempStatus(state.temp);
+  document.getElementById('tempVal').textContent = state.temp.toFixed(1);
+  document.getElementById('tempVal').style.color = tmp.color;
+  document.getElementById('tempBadge').textContent = tmp.label;
+  document.getElementById('tempBadge').style.background = tmp.bg;
+  document.getElementById('tempBadge').style.color = tmp.color;
+
+  const hum = humidStatus(state.humid);
+  document.getElementById('humidVal').textContent = Math.round(state.humid);
+  document.getElementById('humidVal').style.color = hum.color;
+  document.getElementById('humidBadge').textContent = hum.label;
+  document.getElementById('humidBadge').style.background = hum.bg;
+  document.getElementById('humidBadge').style.color = hum.color;
+
+  document.getElementById('energyVal').textContent = state.energy.toFixed(1);
+
+  // Bottom bars for accent colors
+  const cards = document.querySelectorAll('.metric-card');
+  [co2.color, tmp.color, hum.color].forEach((c,i) => {
+    const bar = cards[i]?.querySelector('[style*="bottom:0"]');
+    if(bar) bar.style.background = c;
+  });
+}
+
+// ── Simulate ──
+function simulate() {
+  const spike = Math.random() < 0.04;
+  state.co2 += (Math.random()-0.48) * (spike?70:12);
+  state.co2 = clamp(state.co2, 300, 1300);
+  state.temp += (Math.random()-0.49) * (spike?1.8:0.25);
+  state.temp = clamp(state.temp, 12, 34);
+  state.humid += (Math.random()-0.48) * (spike?7:1.8);
+  state.humid = clamp(state.humid, 18, 90);
+  state.energy += (Math.random()-0.48) * (spike?1:0.15);
+  state.energy = clamp(state.energy, 0.5, 8);
+
+  history.co2.push(state.co2);
+  history.temp.push(state.temp);
+  history.humid.push(state.humid);
+  history.energy.push(state.energy);
+  if(history.co2.length>maxHist){ history.co2.shift(); history.temp.shift(); history.humid.shift(); history.energy.shift(); }
+
+  // Increment readings counter
+  const el = document.getElementById('readingsToday');
+  el.textContent = (parseInt(el.textContent.replace(/,/g,'')) + Math.floor(Math.random()*4+1)).toLocaleString();
+
+  updateMetrics();
+  drawTrend();
+  drawAllSparks();
+}
+
+setInterval(simulate, 2000);
+
+// ── Sparkline Drawing ──
+function drawSpark(canvasId, data, color) {
+  const c = document.getElementById(canvasId);
+  if(!c) return;
+  const ctx = c.getContext('2d');
+  c.width = c.offsetWidth * 2;
+  c.height = 64;
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const slice = data.slice(-30);
+  if(slice.length<2) return;
+  const min = Math.min(...slice);
+  const max = Math.max(...slice);
+  const range = max-min || 1;
+
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  for(let i=0;i<slice.length;i++){
+    const x = (c.width/(slice.length-1))*i;
+    const y = c.height - 4 - ((slice[i]-min)/range)*(c.height-8);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Fill under
+  const lastX = (c.width/(slice.length-1))*(slice.length-1);
+  const lastY = c.height - 4 - ((slice[slice.length-1]-min)/range)*(c.height-8);
+  ctx.lineTo(lastX, c.height);
+  ctx.lineTo(0, c.height);
+  ctx.closePath();
+  ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb','rgba');
+  ctx.fill();
+}
+
+function drawAllSparks() {
+  const co2c = co2Status(state.co2).color;
+  const tc = tempStatus(state.temp).color;
+  const hc = humidStatus(state.humid).color;
+  // Convert CSS var refs to actual colors for canvas
+  const colorMap = {
+    'var(--green)': '#3ddc84',
+    'var(--amber)': '#e8a925',
+    'var(--red)': '#e84545',
+  };
+  drawSpark('sparkCo2', history.co2, colorMap[co2c]||'#3ddc84');
+  drawSpark('sparkTemp', history.temp, colorMap[tc]||'#3ddc84');
+  drawSpark('sparkHumid', history.humid, colorMap[hc]||'#3ddc84');
+  drawSpark('sparkEnergy', history.energy, '#e8a925');
+}
+
+// ── Trend Chart ──
+function drawTrend() {
+  const c = document.getElementById('trendChart');
+  const ctx = c.getContext('2d');
+  c.width = c.offsetWidth * 2;
+  c.height = 440;
+  const w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(232,226,212,0.04)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<6;i++){
+    const y = (h/6)*i + 10;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+  }
+  // Time labels
+  ctx.fillStyle = 'rgba(138,133,120,0.5)';
+  ctx.font = '18px "DM Mono"';
+  const labels = ['00:00','04:00','08:00','12:00','16:00','20:00','Now'];
+  labels.forEach((l,i) => {
+    ctx.fillText(l, (w/(labels.length-1))*i, h-4);
+  });
+
+  function line(data, min, max, color) {
+    if(data.length<2) return;
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    const range = max-min || 1;
+    for(let i=0;i<data.length;i++){
+      const x = (w/(data.length-1))*i;
+      const y = h - 30 - ((data[i]-min)/range)*(h-50);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  line(history.co2, 250, 1300, '#3ddc84');
+  line(history.temp, 10, 36, '#e8a925');
+  line(history.humid, 15, 95, '#45a5e8');
+}
+
+drawTrend();
+drawAllSparks();
+
+// ── Gauges ──
+function drawGauge(canvasId, pct, color) {
+  const c = document.getElementById(canvasId);
+  if(!c) return;
+  const ctx = c.getContext('2d');
+  c.width = 240;
+  c.height = 140;
+  const cx = 120, cy = 120, r = 90;
+  const startAngle = Math.PI;
+  const endAngle = 2 * Math.PI;
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = '#1e1d1a';
+  ctx.lineWidth = 8;
+  ctx.stroke();
+
+  // Value arc
+  const valAngle = startAngle + (endAngle - startAngle) * (pct / 100);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, valAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'butt';
+  ctx.stroke();
+}
+
+function updateGauges(boiler, insulation, vent) {
+  const boilerColor = boiler > 80 ? '#3ddc84' : boiler > 60 ? '#e8a925' : '#e84545';
+  const insColor = insulation > 80 ? '#3ddc84' : insulation > 60 ? '#e8a925' : '#e84545';
+  const ventColor = vent > 80 ? '#3ddc84' : vent > 60 ? '#e8a925' : '#e84545';
+
+  drawGauge('gaugeBoiler', boiler, boilerColor);
+  drawGauge('gaugeInsulation', insulation, insColor);
+  drawGauge('gaugeVent', vent, ventColor);
+
+  document.getElementById('gaugeBoilerVal').textContent = boiler + '%';
+  document.getElementById('gaugeBoilerVal').style.color = boilerColor;
+  document.getElementById('gaugeInsVal').textContent = insulation + '%';
+  document.getElementById('gaugeInsVal').style.color = insColor;
+  document.getElementById('gaugeVentVal').textContent = vent + '%';
+  document.getElementById('gaugeVentVal').style.color = ventColor;
+}
+
+updateGauges(92, 95, 97);
+updateMetrics();
+</script>
+
+</body>
+</html>
