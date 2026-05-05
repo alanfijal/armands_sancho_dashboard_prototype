@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Armadans Sancho — Smart Green Lease Dashboard</title>
+<title>PULSE — Live Operations · Armadans Sancho</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:wght@200;300;400;600&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
     --concrete: #131311;
     --aggregate: #1e1d1a;
     --stone: #2a2825;
+    --stone-hi: #3a3631;
     --chalk: #e8e2d4;
     --chalk-dim: #8a8578;
     --chalk-mid: #b5ad9e;
@@ -26,13 +27,14 @@
     --red-dim: rgba(232,69,69,0.1);
     --blue: #45a5e8;
     --blue-dim: rgba(69,165,232,0.1);
+    --teal: #2ba8a0;
+    --teal-dim: rgba(43,168,160,0.12);
     --font-display: 'Instrument Serif', Georgia, serif;
     --font-body: 'Crimson Pro', serif;
     --font-mono: 'DM Mono', monospace;
   }
 
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
   html { scrollbar-width: thin; scrollbar-color: var(--stone) var(--carbon); }
 
   body {
@@ -46,7 +48,7 @@
     min-height: 100vh;
   }
 
-  /* Grain */
+  /* film grain */
   body::after {
     content:'';
     position:fixed;inset:0;
@@ -57,8 +59,8 @@
   /* ── Layout Shell ── */
   .shell {
     display: grid;
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: 56px 1fr;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: 64px 1fr;
     min-height: 100vh;
   }
 
@@ -70,480 +72,718 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
+    padding: 0 28px;
     z-index: 10;
+    position: relative;
   }
 
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
+  .topbar-left { display: flex; align-items: center; gap: 24px; }
 
   .brand {
     font-family: var(--font-display);
-    font-size: 1.2rem;
+    font-size: 30px;
     color: var(--chalk);
-    letter-spacing: -0.5px;
+    letter-spacing: 6px;
+    line-height: 1;
+    font-weight: 400;
   }
-
-  .brand em { color: var(--amber); font-style: italic; }
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--chalk-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
 
   .topbar-divider {
-    width: 1px;
-    height: 24px;
-    background: var(--stone);
+    width: 1px; height: 32px; background: var(--stone);
   }
 
-  .topbar-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--green);
-  }
+  .topbar-status { display: flex; align-items: center; gap: 10px; }
 
   .pulse-dot {
-    width: 6px; height: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
     background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+    box-shadow: 0 0 12px var(--green);
+    animation: pulse 1.6s ease-in-out infinite;
   }
-
   @keyframes pulse {
-    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(61,220,132,0.4); }
-    50% { opacity:0.7; box-shadow: 0 0 0 6px rgba(61,220,132,0); }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
   }
 
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  .status-text {
+    font-size: 10px; letter-spacing: 2px; color: var(--chalk-mid);
+    text-transform: uppercase;
   }
+
+  .topbar-right { display: flex; align-items: center; gap: 18px; }
 
   .topbar-time {
-    color: var(--chalk-dim);
-    font-size: 11px;
-    letter-spacing: 1px;
+    font-size: 12px; color: var(--chalk-mid); letter-spacing: 1px;
+    font-feature-settings: 'tnum';
   }
 
-  .topbar-badge {
-    padding: 4px 10px;
-    border: 1px solid var(--amber-dim);
-    color: var(--amber);
+  /* phase toggle */
+  .phase-toggle {
+    display: flex;
+    background: var(--aggregate);
+    border: 1px solid var(--stone);
+    border-radius: 1px;
+    padding: 2px;
+  }
+  .phase-pill {
+    background: transparent;
+    border: none;
+    color: var(--chalk-dim);
+    font-family: var(--font-mono);
     font-size: 10px;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all .25s ease;
     text-transform: uppercase;
+  }
+  .phase-pill:hover { color: var(--chalk-mid); }
+  .phase-pill.active {
+    background: var(--amber);
+    color: var(--carbon);
+    font-weight: 500;
   }
 
   /* ── Sidebar ── */
   .sidebar {
     background: var(--concrete);
     border-right: 1px solid var(--aggregate);
-    padding: 20px 0;
+    padding: 24px 0 0 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
   }
 
   .sidebar-section {
-    padding: 0 16px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--aggregate);
     margin-bottom: 24px;
   }
+  .sidebar-section:last-of-type { border-bottom: none; }
 
   .sidebar-label {
     font-size: 9px;
+    color: var(--chalk-dim);
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--chalk-dim);
-    margin-bottom: 10px;
-    padding: 0 8px;
-  }
-
-  .building-list {
-    list-style: none;
-  }
-
-  .building-item {
+    margin-bottom: 14px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-left: 2px solid transparent;
-    margin-bottom: 1px;
+  }
+  .label-count {
+    background: var(--aggregate);
+    padding: 1px 7px;
+    border-radius: 1px;
+    font-size: 9px;
+    color: var(--chalk-mid);
   }
 
+  .building-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .building-item {
+    padding: 11px 12px;
+    border-left: 2px solid transparent;
+    cursor: pointer;
+    transition: all .2s ease;
+    display: flex; align-items: center; gap: 10px;
+    position: relative;
+  }
   .building-item:hover {
     background: var(--aggregate);
+    border-left-color: var(--stone-hi);
   }
-
   .building-item.active {
     background: var(--aggregate);
     border-left-color: var(--amber);
   }
+  .building-item.hidden { display: none; }
 
   .building-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
     flex-shrink: 0;
   }
-
-  .building-info {
-    flex: 1;
-    min-width: 0;
-  }
-
+  .building-info { flex: 1; min-width: 0; }
   .building-name {
-    font-size: 12px;
-    color: var(--chalk);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-family: var(--font-body);
+    font-size: 14px; color: var(--chalk);
+    line-height: 1.2;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-
-  .building-addr {
-    font-size: 10px;
-    color: var(--chalk-dim);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .building-meta {
+    font-size: 9px; color: var(--chalk-dim);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-top: 3px;
+    display: flex; gap: 8px; align-items: center;
   }
+  .phase-tag {
+    background: var(--teal-dim);
+    color: var(--teal);
+    padding: 1px 5px;
+    border-radius: 1px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+  .phase-tag.p0 { background: var(--amber-dim); color: var(--amber); }
 
   .building-score {
     font-family: var(--font-display);
-    font-size: 1.1rem;
-    flex-shrink: 0;
+    font-size: 22px;
+    color: var(--chalk);
+    line-height: 1;
   }
 
-  /* Sidebar alerts */
-  .alert-list {
-    list-style: none;
-  }
-
+  /* alerts */
+  .alert-list { display: flex; flex-direction: column; gap: 6px; }
   .alert-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 12px;
-    border-left: 2px solid var(--red);
-    margin-bottom: 2px;
-    background: var(--red-dim);
+    background: var(--aggregate);
+    padding: 11px 13px;
+    border-left: 2px solid var(--amber);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all .25s ease;
+    position: relative;
+  }
+  .alert-item:hover {
+    background: var(--stone);
+    transform: translateX(2px);
+  }
+  .alert-item.severity-high { border-left-color: var(--red); }
+  .alert-item.severity-info { border-left-color: var(--blue); }
+  .alert-item.resolved {
+    border-left-color: var(--green);
+    opacity: 0.55;
+  }
+  .alert-item.new::after {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .alert-item.severity-high.new::after { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .alert-item.resolved::after { display: none; }
+
+  .alert-text { font-size: 11px; color: var(--chalk); line-height: 1.45; }
+  .alert-text strong { color: var(--chalk); font-weight: 500; }
+  .alert-meta {
+    font-size: 9px; color: var(--chalk-dim);
+    margin-top: 4px;
+    display: flex; gap: 8px; letter-spacing: 1px;
   }
 
-  .alert-item:hover { background: rgba(232,69,69,0.15); }
-
-  .alert-item.warn {
-    border-left-color: var(--amber);
-    background: var(--amber-dim);
-  }
-
-  .alert-item.warn:hover { background: rgba(232,169,37,0.18); }
-
-  .alert-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
-  .alert-text { font-size: 11px; color: var(--chalk-mid); line-height: 1.4; }
-  .alert-time { font-size: 9px; color: var(--chalk-dim); margin-top: 2px; display: block; }
-
-  /* Sidebar stats */
+  /* sidebar stats */
   .sidebar-stats {
     margin-top: auto;
-    padding: 16px;
+    padding: 18px 20px 22px;
     border-top: 1px solid var(--aggregate);
   }
-
   .stat-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 8px;
+    align-items: baseline;
+    padding: 4px 0;
   }
+  .stat-label { font-size: 9px; color: var(--chalk-dim); letter-spacing: 1.5px; text-transform: uppercase; }
+  .stat-val { font-size: 12px; color: var(--chalk-mid); font-feature-settings: 'tnum'; }
 
-  .stat-label { font-size: 10px; color: var(--chalk-dim); letter-spacing: 1px; text-transform: uppercase; }
-  .stat-val { font-size: 11px; color: var(--chalk-mid); }
-
-  /* ── Main Content ── */
+  /* ── Main Area ── */
   .main {
-    padding: 24px;
+    padding: 22px 26px 24px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    display: flex; flex-direction: column;
+    gap: 18px;
   }
 
-  /* ── Metric Strip ── */
+  /* ── KPI strip ── */
   .metric-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 2px;
+    gap: 14px;
   }
-
   .metric-card {
     background: var(--concrete);
-    padding: 20px 24px;
+    border: 1px solid var(--aggregate);
+    padding: 18px 18px 14px;
     position: relative;
     overflow: hidden;
-    transition: background 0.2s;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
   }
-
-  .metric-card:hover { background: var(--aggregate); }
-
-  .metric-card::after {
+  .metric-card::before {
     content: '';
     position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 2px;
-    transition: background 0.3s;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--stone-hi), transparent);
   }
-
   .metric-top {
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
-    align-items: center;
     margin-bottom: 8px;
   }
-
   .metric-label {
-    font-size: 10px;
+    font-size: 9px;
+    color: var(--chalk-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--chalk-dim);
+    line-height: 1.4;
   }
-
   .metric-badge {
-    font-size: 9px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
     padding: 2px 6px;
-    letter-spacing: 1px;
+    border-radius: 1px;
     text-transform: uppercase;
+    font-weight: 500;
   }
-
   .metric-value {
     font-family: var(--font-display);
-    font-size: 2.8rem;
+    font-size: 56px;
     line-height: 1;
-    margin-bottom: 2px;
+    color: var(--green);
+    margin-top: 4px;
+    font-feature-settings: 'tnum';
   }
-
   .metric-unit {
     font-size: 11px;
     color: var(--chalk-dim);
+    margin-top: 4px;
+    letter-spacing: 1px;
   }
-
+  .metric-foot {
+    font-size: 10px;
+    color: var(--chalk-dim);
+    margin-top: 14px;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
+  }
+  .metric-foot strong { color: var(--chalk-mid); font-weight: 500; }
   .metric-spark {
-    margin-top: 12px;
-    height: 32px;
-  }
-
-  .metric-spark canvas {
+    position: absolute;
+    bottom: 2px; left: 0; right: 0;
+    height: 28px;
     width: 100%;
-    height: 32px;
-    display: block;
+    opacity: 0.45;
+    z-index: 1;
+  }
+  .metric-bar-accent {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
   }
 
-  /* ── Charts Row ── */
+  /* ── Charts row ── */
   .charts-row {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2px;
-  }
-
-  .chart-panel {
-    background: var(--concrete);
-    padding: 24px;
-  }
-
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .panel-title {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--chalk-dim);
-  }
-
-  .panel-legend {
-    display: flex;
+    grid-template-columns: 1fr 360px;
     gap: 14px;
   }
-
+  .chart-panel {
+    background: var(--concrete);
+    border: 1px solid var(--aggregate);
+    padding: 18px;
+    position: relative;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .panel-title {
+    font-size: 11px;
+    color: var(--chalk-mid);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .panel-legend { display: flex; gap: 16px; }
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 10px;
     color: var(--chalk-dim);
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
   }
+  .legend-dot { width: 8px; height: 2px; }
 
-  .legend-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-  }
+  .main-canvas { width: 100%; height: 280px; display: block; }
 
-  .main-canvas {
-    width: 100%;
-    height: 220px;
-    display: block;
-  }
-
-  /* ── Gauge Panel ── */
+  /* gauges */
   .gauge-grid {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 6px;
+    height: 100%;
+    justify-content: space-around;
+    padding: 6px 0;
   }
-
   .gauge-item {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 6px 0;
   }
-
   .gauge-canvas {
-    width: 120px;
+    width: 110px;
     height: 70px;
-    display: block;
-    margin: 0 auto 8px;
+    flex-shrink: 0;
   }
-
+  .gauge-info { flex: 1; }
   .gauge-value {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 30px;
+    color: var(--chalk);
     line-height: 1;
   }
-
   .gauge-label {
-    font-size: 9px;
+    font-size: 10px;
+    color: var(--chalk-mid);
     letter-spacing: 2px;
     text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .gauge-sub {
+    font-size: 9px;
     color: var(--chalk-dim);
     margin-top: 2px;
+    letter-spacing: 0.5px;
   }
 
-  /* ── Bottom Row ── */
+  /* ── Bottom row ── */
   .bottom-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
   }
 
-  /* ── Maintenance Log ── */
   .log-panel {
     background: var(--concrete);
-    padding: 24px;
+    border: 1px solid var(--aggregate);
+    padding: 18px;
   }
-
   .log-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 8px;
   }
-
   .log-table th {
     font-size: 9px;
+    color: var(--chalk-dim);
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--chalk-dim);
     text-align: left;
-    padding: 8px 0;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--aggregate);
+    font-weight: 400;
   }
-
   .log-table td {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--aggregate);
     font-size: 12px;
     color: var(--chalk-mid);
-    vertical-align: middle;
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--aggregate);
+    font-family: var(--font-mono);
   }
-
-  .log-table tr:last-child td { border-bottom: none; }
+  .log-table tr.new-row td {
+    background: rgba(232,169,37,0.06);
+    animation: highlight 1.4s ease-out;
+  }
+  @keyframes highlight {
+    0% { background: rgba(232,169,37,0.25); }
+    100% { background: rgba(232,169,37,0.06); }
+  }
 
   .log-type {
-    display: inline-block;
-    padding: 2px 8px;
     font-size: 9px;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    padding: 2px 6px;
+    border-radius: 1px;
     text-transform: uppercase;
+    font-weight: 500;
+    display: inline-block;
   }
-
   .log-proactive { background: var(--green-dim); color: var(--green); }
   .log-reactive { background: var(--red-dim); color: var(--red); }
   .log-scheduled { background: var(--blue-dim); color: var(--blue); }
 
-  /* ── Energy Savings Panel ── */
+  .log-saving {
+    color: var(--green);
+    font-feature-settings: 'tnum';
+    font-size: 11px;
+  }
+  .log-saving.cost {
+    color: var(--red);
+  }
+
+  /* savings panel */
   .savings-panel {
     background: var(--concrete);
-    padding: 24px;
-  }
-
-  .savings-big {
-    text-align: center;
-    padding: 20px 0 24px;
-  }
-
-  .savings-amount {
-    font-family: var(--font-display);
-    font-size: 3.5rem;
-    color: var(--green);
-    line-height: 1;
-  }
-
-  .savings-sub {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--chalk-dim);
-    margin-top: 6px;
-  }
-
-  .savings-bars {
+    border: 1px solid var(--aggregate);
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
   }
-
-  .sbar-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .savings-big {
+    text-align: center;
+    padding: 18px 0 10px;
+    border-bottom: 1px solid var(--aggregate);
+    margin-bottom: 14px;
   }
-
-  .sbar-label {
-    width: 70px;
+  .savings-amount {
+    font-family: var(--font-display);
+    font-size: 64px;
+    color: var(--green);
+    line-height: 1;
+    font-feature-settings: 'tnum';
+    transition: transform 0.4s ease;
+  }
+  .savings-amount.bump { transform: scale(1.06); }
+  .savings-sub {
     font-size: 10px;
     color: var(--chalk-dim);
-    text-align: right;
-    flex-shrink: 0;
+    margin-top: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .savings-bars { display: flex; flex-direction: column; gap: 10px; }
+  .sbar-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 64px;
+    align-items: center;
+    gap: 10px;
+  }
+  .sbar-label {
+    font-size: 11px;
+    color: var(--chalk-mid);
     letter-spacing: 0.5px;
   }
-
   .sbar-track {
-    flex: 1;
-    height: 6px;
+    height: 5px;
     background: var(--aggregate);
     overflow: hidden;
   }
-
   .sbar-fill {
     height: 100%;
-    transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+    transition: width 0.8s cubic-bezier(.2,.8,.2,1);
   }
-
   .sbar-val {
-    width: 50px;
     font-size: 11px;
     color: var(--chalk-mid);
-    flex-shrink: 0;
+    text-align: right;
+    font-feature-settings: 'tnum';
   }
 
-  /* ── Responsive ── */
+  /* ── ALERT RESPONSE MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,8,0.85);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--concrete);
+    border: 1px solid var(--stone);
+    width: 600px;
+    max-width: 92vw;
+    padding: 0;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(232,169,37,0.1);
+    animation: modalSlide 0.35s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-head {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--aggregate);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-tag {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--chalk);
+    line-height: 1.2;
+  }
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--stone);
+    color: var(--chalk-dim);
+    width: 30px; height: 30px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    transition: all .2s;
+  }
+  .modal-close:hover { color: var(--chalk); border-color: var(--chalk-dim); }
+
+  .modal-body { padding: 22px 26px; }
+  .modal-section { margin-bottom: 20px; }
+  .modal-section-label {
+    font-size: 9px;
+    color: var(--chalk-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .modal-detail {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--chalk);
+    line-height: 1.5;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .compare-card {
+    background: var(--aggregate);
+    padding: 14px 16px;
+    border-left: 2px solid var(--red);
+  }
+  .compare-card.prevent { border-left-color: var(--green); }
+  .compare-head {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--chalk-dim);
+    text-transform: uppercase;
+  }
+  .compare-amount {
+    font-family: var(--font-display);
+    font-size: 30px;
+    color: var(--red);
+    line-height: 1;
+    margin-top: 6px;
+  }
+  .compare-card.prevent .compare-amount { color: var(--green); }
+  .compare-detail {
+    font-size: 10px;
+    color: var(--chalk-dim);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .modal-foot {
+    padding: 16px 26px 22px;
+    border-top: 1px solid var(--aggregate);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .btn {
+    border: 1px solid var(--stone);
+    background: transparent;
+    color: var(--chalk-mid);
+    padding: 10px 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn:hover { color: var(--chalk); border-color: var(--chalk-dim); }
+  .btn.primary {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--carbon);
+    font-weight: 500;
+  }
+  .btn.primary:hover {
+    background: var(--amber-glow);
+    border-color: var(--amber-glow);
+  }
+  .btn.primary:disabled {
+    background: var(--green);
+    border-color: var(--green);
+    cursor: default;
+    opacity: 0.85;
+  }
+
+  /* demo trigger button — integrated into topbar */
+  .demo-trigger {
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid var(--amber);
+    padding: 7px 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .25s ease;
+    font-weight: 500;
+  }
+  .demo-trigger:hover {
+    background: var(--amber);
+    color: var(--carbon);
+  }
+  .demo-trigger.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* tooltip */
+  .toast {
+    position: fixed;
+    top: 80px; right: 20px;
+    background: var(--concrete);
+    border: 1px solid var(--green);
+    border-left-width: 3px;
+    padding: 14px 18px;
+    color: var(--chalk);
+    font-size: 12px;
+    z-index: 60;
+    transform: translateX(450px);
+    transition: transform 0.4s cubic-bezier(.2,.8,.2,1);
+    max-width: 360px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+  .toast.show { transform: translateX(0); }
+  .toast-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .toast-body { font-size: 11px; color: var(--chalk-mid); line-height: 1.5; }
+
+  /* responsive */
   @media (max-width: 1100px) {
     .shell { grid-template-columns: 1fr; }
     .sidebar { display: none; }
@@ -557,175 +797,146 @@
 
 <div class="shell">
 
-  <!-- ═══ TOP BAR ═══ -->
+  <!-- ── TOP BAR ── -->
   <header class="topbar">
     <div class="topbar-left">
-      <div class="brand">Armadans <em>Sancho</em></div>
+      <div>
+        <div class="brand">PULSE</div>
+        <div class="brand-sub">by Armadans Sancho</div>
+      </div>
       <div class="topbar-divider"></div>
       <div class="topbar-status">
         <span class="pulse-dot"></span>
-        Live Monitoring
+        <span class="status-text">Live Operations</span>
       </div>
     </div>
     <div class="topbar-right">
-      <span class="topbar-time" id="clock"></span>
-      <span class="topbar-badge">Pilot Cohort</span>
+      <div class="topbar-time" id="clock">—</div>
+      <div class="topbar-divider"></div>
+      <button class="demo-trigger" id="demoBtn">▸ Demo Alert</button>
+      <div class="topbar-divider"></div>
+      <div class="phase-toggle">
+        <button class="phase-pill active" data-phase="0">Phase 0</button>
+        <button class="phase-pill" data-phase="1">Phase 1</button>
+      </div>
     </div>
   </header>
 
-  <!-- ═══ SIDEBAR ═══ -->
+  <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
+
     <div class="sidebar-section">
-      <div class="sidebar-label">Buildings</div>
-      <ul class="building-list" id="buildingList">
-        <li class="building-item active" data-id="0">
-          <span class="building-dot" style="background:var(--green)"></span>
-          <div class="building-info">
-            <div class="building-name">Carrer de Mallorca, 247</div>
-            <div class="building-addr">Eixample — 12 units</div>
-          </div>
-          <span class="building-score" style="color:var(--green)">92</span>
-        </li>
-        <li class="building-item" data-id="1">
-          <span class="building-dot" style="background:var(--amber)"></span>
-          <div class="building-info">
-            <div class="building-name">Rambla del Poblenou, 88</div>
-            <div class="building-addr">Sant Martí — 8 units</div>
-          </div>
-          <span class="building-score" style="color:var(--amber)">71</span>
-        </li>
-        <li class="building-item" data-id="2">
-          <span class="building-dot" style="background:var(--red)"></span>
-          <div class="building-info">
-            <div class="building-name">Carrer de Sants, 134</div>
-            <div class="building-addr">Sants — 16 units</div>
-          </div>
-          <span class="building-score" style="color:var(--red)">48</span>
-        </li>
-        <li class="building-item" data-id="3">
-          <span class="building-dot" style="background:var(--green)"></span>
-          <div class="building-info">
-            <div class="building-name">Via Laietana, 56</div>
-            <div class="building-addr">Ciutat Vella — 6 units</div>
-          </div>
-          <span class="building-score" style="color:var(--green)">87</span>
-        </li>
-        <li class="building-item" data-id="4">
-          <span class="building-dot" style="background:var(--amber)"></span>
-          <div class="building-info">
-            <div class="building-name">Passeig de Gràcia, 15</div>
-            <div class="building-addr">Gràcia — 10 units</div>
-          </div>
-          <span class="building-score" style="color:var(--amber)">68</span>
-        </li>
+      <div class="sidebar-label">
+        <span>Pilot Buildings</span>
+        <span class="label-count" id="bldCount">2</span>
+      </div>
+      <ul class="building-list" id="bldList">
+        <!-- populated by JS -->
       </ul>
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Active Alerts</div>
-      <ul class="alert-list" id="alertList">
-        <li class="alert-item">
-          <span class="alert-icon">▲</span>
-          <div>
-            <div class="alert-text">CO₂ spike detected — Sants 134, Unit 3B</div>
-            <span class="alert-time">2 min ago</span>
-          </div>
-        </li>
-        <li class="alert-item warn">
-          <span class="alert-icon">◆</span>
-          <div>
-            <div class="alert-text">Boiler efficiency drop — Poblenou 88</div>
-            <span class="alert-time">18 min ago</span>
-          </div>
-        </li>
-        <li class="alert-item warn">
-          <span class="alert-icon">◆</span>
-          <div>
-            <div class="alert-text">Humidity rising — Sants 134, Unit 1A</div>
-            <span class="alert-time">34 min ago</span>
-          </div>
-        </li>
-      </ul>
+      <div class="sidebar-label">
+        <span>Active Alerts</span>
+        <span class="label-count" id="alertCount">2</span>
+      </div>
+      <div class="alert-list" id="alertList">
+        <!-- populated by JS -->
+      </div>
     </div>
 
     <div class="sidebar-stats">
       <div class="stat-row">
         <span class="stat-label">Sensors Online</span>
-        <span class="stat-val" style="color:var(--green)">47 / 52</span>
+        <span class="stat-val" id="sensorsOnline">42 / 42</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Uptime</span>
-        <span class="stat-val">99.2%</span>
+        <span class="stat-val">99.7%</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Readings Today</span>
-        <span class="stat-val" id="readingsToday">12,847</span>
+        <span class="stat-val" id="readingsToday">8,412</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Phase</span>
+        <span class="stat-val" id="phaseStat">Phase 0 — Months 1-2</span>
       </div>
     </div>
+
   </aside>
 
-  <!-- ═══ MAIN ═══ -->
+  <!-- ── MAIN AREA ── -->
   <main class="main">
 
-    <!-- Metric Strip -->
-    <div class="metric-strip">
-      <div class="metric-card" id="co2Card">
-        <div class="metric-top">
-          <span class="metric-label">CO₂</span>
-          <span class="metric-badge" id="co2Badge" style="background:var(--green-dim);color:var(--green)">Optimal</span>
-        </div>
-        <div class="metric-value" id="co2Val" style="color:var(--green)">412</div>
-        <div class="metric-unit">ppm</div>
-        <div class="metric-spark"><canvas id="sparkCo2"></canvas></div>
-        <div class="metric-card__after" style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
-      </div>
+    <!-- KPI strip — 4 cards mapped to the deck's sensor stack -->
+    <section class="metric-strip">
 
-      <div class="metric-card" id="tempCard">
-        <div class="metric-top">
-          <span class="metric-label">Temperature</span>
-          <span class="metric-badge" id="tempBadge" style="background:var(--green-dim);color:var(--green)">Comfort</span>
-        </div>
-        <div class="metric-value" id="tempVal" style="color:var(--green)">21.4</div>
-        <div class="metric-unit">°C</div>
-        <div class="metric-spark"><canvas id="sparkTemp"></canvas></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
-      </div>
-
-      <div class="metric-card" id="humidCard">
-        <div class="metric-top">
-          <span class="metric-label">Humidity</span>
-          <span class="metric-badge" id="humidBadge" style="background:var(--green-dim);color:var(--green)">Ideal</span>
-        </div>
-        <div class="metric-value" id="humidVal" style="color:var(--green)">48</div>
-        <div class="metric-unit">%RH</div>
-        <div class="metric-spark"><canvas id="sparkHumid"></canvas></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--green)"></div>
-      </div>
-
+      <!-- 1. Communal electricity (SAVE) -->
       <div class="metric-card">
         <div class="metric-top">
-          <span class="metric-label">Energy Draw</span>
-          <span class="metric-badge" id="energyBadge" style="background:var(--amber-dim);color:var(--amber)">Elevated</span>
+          <span class="metric-label">Communal<br>Electricity</span>
+          <span class="metric-badge" id="elecBadge" style="background:var(--green-dim);color:var(--green);">−47%</span>
         </div>
-        <div class="metric-value" id="energyVal" style="color:var(--amber)">3.2</div>
-        <div class="metric-unit">kWh / hr</div>
-        <div class="metric-spark"><canvas id="sparkEnergy"></canvas></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--amber)"></div>
+        <div class="metric-value" id="elecVal" style="color:var(--green);">14.2</div>
+        <div class="metric-unit">kWh today  ·  vs 26.8 baseline</div>
+        <div class="metric-foot"><strong>Smart presence + lighting</strong><br>Stairwells, hallways, garage</div>
+        <canvas class="metric-spark" id="sparkElec"></canvas>
+        <div class="metric-bar-accent" style="background:var(--green);"></div>
       </div>
-    </div>
 
-    <!-- Charts Row -->
-    <div class="charts-row">
+      <!-- 2. Water protection (SAVE) -->
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Water<br>Protection</span>
+          <span class="metric-badge" id="waterBadge" style="background:var(--green-dim);color:var(--green);">Nominal</span>
+        </div>
+        <div class="metric-value" id="waterVal" style="color:var(--green);">3</div>
+        <div class="metric-unit">leaks caught  ·  YTD</div>
+        <div class="metric-foot"><strong>Flood / leak detectors</strong><br>Risers, water heaters, low points</div>
+        <canvas class="metric-spark" id="sparkWater"></canvas>
+        <div class="metric-bar-accent" style="background:var(--green);"></div>
+      </div>
+
+      <!-- 3. Elevator fleet (PROTECT) -->
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Elevator<br>Fleet</span>
+          <span class="metric-badge" id="liftBadge" style="background:var(--amber-dim);color:var(--amber);">1 Watch</span>
+        </div>
+        <div class="metric-value" id="liftVal" style="color:var(--amber);">87</div>
+        <div class="metric-unit">health index  ·  vibration + cycles</div>
+        <div class="metric-foot"><strong>Predictive maintenance</strong><br>Mallorca 247 — bearing watch</div>
+        <canvas class="metric-spark" id="sparkLift"></canvas>
+        <div class="metric-bar-accent" style="background:var(--amber);"></div>
+      </div>
+
+      <!-- 4. Air safety (PROTECT) -->
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Air<br>Safety</span>
+          <span class="metric-badge" id="airBadge" style="background:var(--green-dim);color:var(--green);">Safe</span>
+        </div>
+        <div class="metric-value" id="airVal" style="color:var(--green);">2.1</div>
+        <div class="metric-unit">ppm CO  ·  garage + plant rooms</div>
+        <div class="metric-foot"><strong>CO + CO₂ + gas leak</strong><br>Boiler rooms, communal garage</div>
+        <canvas class="metric-spark" id="sparkAir"></canvas>
+        <div class="metric-bar-accent" style="background:var(--green);"></div>
+      </div>
+
+    </section>
+
+    <!-- Charts row -->
+    <section class="charts-row">
       <div class="chart-panel">
         <div class="panel-header">
-          <span class="panel-title">24-Hour Trend</span>
+          <span class="panel-title">24h Communal Electricity — vs Reactive Baseline</span>
           <div class="panel-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>CO₂</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Temp</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Humidity</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span>PULSE Live</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--chalk-dim);"></span>Baseline</div>
           </div>
         </div>
-        <canvas class="main-canvas" id="trendChart"></canvas>
+        <canvas class="main-canvas" id="trendCanvas"></canvas>
       </div>
 
       <div class="chart-panel">
@@ -734,398 +945,710 @@
         </div>
         <div class="gauge-grid">
           <div class="gauge-item">
-            <canvas class="gauge-canvas" id="gaugeBoiler"></canvas>
-            <div class="gauge-value" id="gaugeBoilerVal" style="color:var(--amber)">76%</div>
-            <div class="gauge-label">Boiler Efficiency</div>
+            <canvas class="gauge-canvas" id="gaugeSave" width="220" height="140"></canvas>
+            <div class="gauge-info">
+              <div class="gauge-value" id="gaugeSaveVal">94%</div>
+              <div class="gauge-label">Save</div>
+              <div class="gauge-sub">Lighting + leak coverage</div>
+            </div>
           </div>
           <div class="gauge-item">
-            <canvas class="gauge-canvas" id="gaugeInsulation"></canvas>
-            <div class="gauge-value" id="gaugeInsVal" style="color:var(--green)">88%</div>
-            <div class="gauge-label">Insulation Score</div>
+            <canvas class="gauge-canvas" id="gaugeProtect" width="220" height="140"></canvas>
+            <div class="gauge-info">
+              <div class="gauge-value" id="gaugeProtectVal">87%</div>
+              <div class="gauge-label">Protect</div>
+              <div class="gauge-sub">Asset + air-safety status</div>
+            </div>
           </div>
           <div class="gauge-item">
-            <canvas class="gauge-canvas" id="gaugeVent"></canvas>
-            <div class="gauge-value" id="gaugeVentVal" style="color:var(--green)">94%</div>
-            <div class="gauge-label">Ventilation</div>
+            <canvas class="gauge-canvas" id="gaugeProve" width="220" height="140"></canvas>
+            <div class="gauge-info">
+              <div class="gauge-value" id="gaugeProveVal">100%</div>
+              <div class="gauge-label">Prove</div>
+              <div class="gauge-sub">ESG audit-ready</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Bottom Row -->
-    <div class="bottom-row">
-      <!-- Maintenance Log -->
+    <!-- Bottom row -->
+    <section class="bottom-row">
       <div class="log-panel">
         <div class="panel-header">
           <span class="panel-title">Maintenance Activity</span>
+          <span class="panel-title" style="color:var(--chalk-dim);">Last 30 days</span>
         </div>
         <table class="log-table">
           <thead>
             <tr>
-              <th>Type</th>
+              <th style="width:90px;">Type</th>
               <th>Action</th>
-              <th>Building</th>
-              <th>Date</th>
+              <th style="width:120px;">Building</th>
+              <th style="width:80px; text-align:right;">Saved</th>
+              <th style="width:60px;">Date</th>
             </tr>
           </thead>
           <tbody id="logBody">
-            <tr>
-              <td><span class="log-type log-proactive">Proactive</span></td>
-              <td>Boiler recalibration</td>
-              <td>Poblenou 88</td>
-              <td>12 Apr</td>
-            </tr>
-            <tr>
-              <td><span class="log-type log-proactive">Proactive</span></td>
-              <td>Ventilation filter swap</td>
-              <td>Sants 134</td>
-              <td>10 Apr</td>
-            </tr>
-            <tr>
-              <td><span class="log-type log-reactive">Reactive</span></td>
-              <td>Pipe leak — Unit 2A</td>
-              <td>Sants 134</td>
-              <td>8 Apr</td>
-            </tr>
-            <tr>
-              <td><span class="log-type log-scheduled">Scheduled</span></td>
-              <td>Annual boiler service</td>
-              <td>Mallorca 247</td>
-              <td>5 Apr</td>
-            </tr>
-            <tr>
-              <td><span class="log-type log-proactive">Proactive</span></td>
-              <td>Humidity sensor trigger — dehumidifier deployed</td>
-              <td>Gràcia 15</td>
-              <td>3 Apr</td>
-            </tr>
+            <!-- populated by JS -->
           </tbody>
         </table>
       </div>
 
-      <!-- Energy Savings -->
       <div class="savings-panel">
         <div class="panel-header">
-          <span class="panel-title">Green Lease — Monthly Savings</span>
+          <span class="panel-title">Communal Savings — YTD</span>
         </div>
         <div class="savings-big">
-          <div class="savings-amount" id="totalSavings">€1,247</div>
-          <div class="savings-sub">Estimated across pilot cohort</div>
+          <div class="savings-amount" id="totalSavings">€2,847</div>
+          <div class="savings-sub">Across pilot cohort</div>
         </div>
-        <div class="savings-bars">
-          <div class="sbar-row">
-            <span class="sbar-label">Mallorca</span>
-            <div class="sbar-track"><div class="sbar-fill" style="width:72%;background:var(--green)"></div></div>
-            <span class="sbar-val">€384</span>
-          </div>
-          <div class="sbar-row">
-            <span class="sbar-label">Poblenou</span>
-            <div class="sbar-track"><div class="sbar-fill" style="width:48%;background:var(--amber)"></div></div>
-            <span class="sbar-val">€256</span>
-          </div>
-          <div class="sbar-row">
-            <span class="sbar-label">Sants</span>
-            <div class="sbar-track"><div class="sbar-fill" style="width:35%;background:var(--red)"></div></div>
-            <span class="sbar-val">€187</span>
-          </div>
-          <div class="sbar-row">
-            <span class="sbar-label">Laietana</span>
-            <div class="sbar-track"><div class="sbar-fill" style="width:58%;background:var(--green)"></div></div>
-            <span class="sbar-val">€244</span>
-          </div>
-          <div class="sbar-row">
-            <span class="sbar-label">Gràcia</span>
-            <div class="sbar-track"><div class="sbar-fill" style="width:42%;background:var(--amber)"></div></div>
-            <span class="sbar-val">€176</span>
-          </div>
+        <div class="savings-bars" id="savingsBars">
+          <!-- populated by JS -->
         </div>
       </div>
-    </div>
+    </section>
 
   </main>
 </div>
 
+<!-- ── ALERT RESPONSE MODAL ── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-tag" id="modalTag">Anomaly · Predictive</div>
+        <div class="modal-title" id="modalTitle">Vibration anomaly — Mallorca 247 elevator</div>
+      </div>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-label">Sensor reading</div>
+        <div class="modal-detail" id="modalDetail">
+          Bearing vibration pattern degrading on motor #1. Frequency signature consistent with early-stage wear. Predicted failure window: 14–21 days.
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Recommended action</div>
+        <div class="modal-detail" id="modalRec">
+          Schedule preventive bearing replacement via Construccions Rovian. Expected downtime: 2 hours, off-peak.
+        </div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-label">Cost comparison</div>
+        <div class="compare-grid">
+          <div class="compare-card">
+            <div class="compare-head">If reactive (Saturday emergency)</div>
+            <div class="compare-amount" id="modalReactive">€800</div>
+            <div class="compare-detail">Emergency call-out + downtime<br>Stranded residents · trust impact</div>
+          </div>
+          <div class="compare-card prevent">
+            <div class="compare-head">Preventive intervention</div>
+            <div class="compare-amount" id="modalPreventive">€180</div>
+            <div class="compare-detail">Tuesday 09:30 scheduled<br>Off-peak · zero disruption</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="modalDismiss">Defer</button>
+      <button class="btn primary" id="modalAct">Schedule with Rovian — €620 saved</button>
+    </div>
+  </div>
+</div>
+
+<!-- toast for confirmations -->
+<div class="toast" id="toast">
+  <div class="toast-title" id="toastTitle">Saved €620</div>
+  <div class="toast-body" id="toastBody">Preventive intervention scheduled with Construccions Rovian for Tuesday 09:30. Logged to YTD savings.</div>
+</div>
+
 <script>
-// ── Clock ──
+// ============================================================
+// DATA MODEL
+// ============================================================
+
+const buildings = [
+  // Phase 0 — Armadans-owned (the pilot starts here)
+  { id:0, name:'Mallorca 247',   nbhd:'Eixample',     phase:0, score:94, sensors:{ elec:14.2, water:0, lift:87, air:2.1 } },
+  { id:1, name:'Sant Pere 12',   nbhd:'Ciutat Vella', phase:0, score:91, sensors:{ elec:11.8, water:0, lift:96, air:1.4 } },
+
+  // Phase 1 — friendly Juntas (revealed when phase toggle = 1)
+  { id:2, name:'Poblenou 88',    nbhd:'Sant Martí',   phase:1, score:88, sensors:{ elec:18.1, water:0, lift:82, air:2.8 } },
+  { id:3, name:'Via Laietana 56',nbhd:'Ciutat Vella', phase:1, score:85, sensors:{ elec:21.4, water:1, lift:90, air:3.1 } },
+  { id:4, name:'Gràcia 15',      nbhd:'Gràcia',       phase:1, score:79, sensors:{ elec:16.7, water:0, lift:74, air:4.4 } },
+];
+
+const savings = {
+  byBuilding: {
+    0: 1284, 1: 902, 2: 0, 3: 0, 4: 0,
+  },
+  total() { return Object.values(this.byBuilding).reduce((a,b)=>a+b, 0); }
+};
+
+const initialAlerts = [
+  { id:'a1', severity:'high', title:'Vibration anomaly', target:'Mallorca 247 elevator', sensor:'Vibration + cycles · motor #1',
+    detail:'Bearing vibration pattern degrading on motor #1. Frequency signature consistent with early-stage wear. Predicted failure window: 14–21 days.',
+    rec:'Schedule preventive bearing replacement via Construccions Rovian. Expected downtime: 2 hours, off-peak.',
+    reactive:800, preventive:180, time:'12 min ago', new:false, resolved:false },
+  { id:'a2', severity:'info', title:'Lighting timer fault', target:'Sant Pere 12 stairwell B', sensor:'Smart presence',
+    detail:'Stairwell B presence sensor reporting always-on lighting overnight (3 days). Likely degraded PIR sensor or wiring fault.',
+    rec:'Replace sensor module during next routine visit. Estimated extra communal electricity cost if untreated: €18/month.',
+    reactive:60, preventive:25, time:'2 hr ago', new:false, resolved:false },
+];
+
+let alerts = [...initialAlerts];
+let activeBuilding = 0;
+let currentPhase = 0;
+let demoTriggered = false;
+
+// initial maintenance log
+const logEntries = [
+  { type:'proactive', action:'Stairwell lighting timer recalibrated', building:'Mallorca 247', saved:42, date:'2 May' },
+  { type:'proactive', action:'Pre-emptive boiler descaling — efficiency holding', building:'Sant Pere 12', saved:130, date:'28 Apr' },
+  { type:'reactive',  action:'Riser leak — caught at sensor stage', building:'Sant Pere 12', saved:1100, date:'21 Apr' },
+  { type:'scheduled', action:'Garage CO sensor calibration', building:'Mallorca 247', saved:0, date:'15 Apr' },
+  { type:'proactive', action:'Hallway PIR coverage extended', building:'Mallorca 247', saved:78, date:'9 Apr' },
+];
+
+// ============================================================
+// CLOCK
+// ============================================================
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
     now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) +
-    ' — ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    ' · ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
-updateClock();
-setInterval(updateClock, 1000);
+updateClock(); setInterval(updateClock, 1000);
 
-// ── Building Data Profiles ──
-const buildings = [
-  { name:'Mallorca 247', co2:412, temp:21.4, humid:48, energy:2.8, boiler:92, insulation:95, vent:97 },
-  { name:'Poblenou 88',  co2:580, temp:23.1, humid:55, energy:3.9, boiler:71, insulation:78, vent:82 },
-  { name:'Sants 134',    co2:820, temp:18.2, humid:72, energy:5.1, boiler:48, insulation:52, vent:61 },
-  { name:'Laietana 56',  co2:390, temp:21.8, humid:44, energy:2.4, boiler:88, insulation:91, vent:93 },
-  { name:'Gràcia 15',    co2:510, temp:22.6, humid:58, energy:3.4, boiler:68, insulation:74, vent:78 },
-];
+// ============================================================
+// RENDER: building list
+// ============================================================
+function renderBuildings() {
+  const list = document.getElementById('bldList');
+  list.innerHTML = '';
+  const visible = buildings.filter(b => b.phase <= currentPhase);
+  document.getElementById('bldCount').textContent = visible.length;
 
-let activeBuilding = 0;
-const state = { co2:412, temp:21.4, humid:48, energy:2.8 };
-const history = { co2:[], temp:[], humid:[], energy:[] };
-const maxHist = 80;
-
-// Pre-fill history
-for(let i=0;i<maxHist;i++){
-  history.co2.push(400 + Math.random()*60);
-  history.temp.push(20 + Math.random()*3);
-  history.humid.push(44 + Math.random()*10);
-  history.energy.push(2.5 + Math.random()*1.2);
+  visible.forEach(b => {
+    const li = document.createElement('li');
+    li.className = 'building-item' + (b.id === activeBuilding ? ' active' : '');
+    li.dataset.id = b.id;
+    const dotColor = b.score >= 90 ? 'var(--green)' : b.score >= 80 ? 'var(--amber)' : 'var(--red)';
+    li.innerHTML = `
+      <span class="building-dot" style="background:${dotColor};"></span>
+      <div class="building-info">
+        <div class="building-name">${b.name}</div>
+        <div class="building-meta">
+          <span class="phase-tag ${b.phase===0?'p0':''}">Phase ${b.phase}</span>
+          <span>${b.nbhd}</span>
+        </div>
+      </div>
+      <div class="building-score">${b.score}</div>
+    `;
+    li.addEventListener('click', () => {
+      activeBuilding = b.id;
+      renderBuildings();
+      applyBuilding(b);
+    });
+    list.appendChild(li);
+  });
 }
 
-// ── Building Switcher ──
-document.querySelectorAll('.building-item').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelector('.building-item.active').classList.remove('active');
-    el.classList.add('active');
-    activeBuilding = parseInt(el.dataset.id);
-    const b = buildings[activeBuilding];
-    state.co2 = b.co2; state.temp = b.temp; state.humid = b.humid; state.energy = b.energy;
-    // Reset history for new building
-    history.co2 = []; history.temp = []; history.humid = []; history.energy = [];
-    for(let i=0;i<maxHist;i++){
-      history.co2.push(b.co2 + (Math.random()-0.5)*80);
-      history.temp.push(b.temp + (Math.random()-0.5)*3);
-      history.humid.push(b.humid + (Math.random()-0.5)*12);
-      history.energy.push(b.energy + (Math.random()-0.5)*1);
+function applyBuilding(b) {
+  // update KPI cards
+  document.getElementById('elecVal').textContent = b.sensors.elec.toFixed(1);
+  document.getElementById('waterVal').textContent = b.sensors.water === 0 ? '0' : b.sensors.water;
+
+  const liftVal = b.sensors.lift;
+  document.getElementById('liftVal').textContent = liftVal;
+  const liftBadge = document.getElementById('liftBadge');
+  if (liftVal >= 90) {
+    liftBadge.textContent = 'Healthy';
+    liftBadge.style.background = 'var(--green-dim)';
+    liftBadge.style.color = 'var(--green)';
+    document.getElementById('liftVal').style.color = 'var(--green)';
+  } else if (liftVal >= 80) {
+    liftBadge.textContent = '1 Watch';
+    liftBadge.style.background = 'var(--amber-dim)';
+    liftBadge.style.color = 'var(--amber)';
+    document.getElementById('liftVal').style.color = 'var(--amber)';
+  } else {
+    liftBadge.textContent = 'Service Due';
+    liftBadge.style.background = 'var(--red-dim)';
+    liftBadge.style.color = 'var(--red)';
+    document.getElementById('liftVal').style.color = 'var(--red)';
+  }
+
+  const airVal = b.sensors.air;
+  document.getElementById('airVal').textContent = airVal.toFixed(1);
+  const airBadge = document.getElementById('airBadge');
+  if (airVal < 3) {
+    airBadge.textContent = 'Safe';
+    airBadge.style.background = 'var(--green-dim)';
+    airBadge.style.color = 'var(--green)';
+    document.getElementById('airVal').style.color = 'var(--green)';
+  } else if (airVal < 5) {
+    airBadge.textContent = 'Monitor';
+    airBadge.style.background = 'var(--amber-dim)';
+    airBadge.style.color = 'var(--amber)';
+    document.getElementById('airVal').style.color = 'var(--amber)';
+  } else {
+    airBadge.textContent = 'Alert';
+    airBadge.style.background = 'var(--red-dim)';
+    airBadge.style.color = 'var(--red)';
+    document.getElementById('airVal').style.color = 'var(--red)';
+  }
+  drawAllSparks();
+  drawTrend();
+}
+
+// ============================================================
+// RENDER: alerts
+// ============================================================
+function renderAlerts() {
+  const list = document.getElementById('alertList');
+  list.innerHTML = '';
+  const active = alerts.filter(a => !a.resolved);
+  document.getElementById('alertCount').textContent = active.length;
+
+  alerts.forEach(a => {
+    const div = document.createElement('div');
+    div.className = `alert-item severity-${a.severity}` + (a.new ? ' new' : '') + (a.resolved ? ' resolved' : '');
+    div.dataset.id = a.id;
+    div.innerHTML = `
+      <div class="alert-text"><strong>${a.title}</strong> — ${a.target}</div>
+      <div class="alert-meta">
+        <span>${a.sensor}</span>
+        <span>·</span>
+        <span>${a.resolved ? 'Resolved' : a.time}</span>
+      </div>
+    `;
+    div.addEventListener('click', () => openModal(a));
+    list.appendChild(div);
+  });
+}
+
+// ============================================================
+// RENDER: maintenance log
+// ============================================================
+function renderLog() {
+  const tbody = document.getElementById('logBody');
+  tbody.innerHTML = '';
+  logEntries.forEach((e, idx) => {
+    const tr = document.createElement('tr');
+    if (e.isNew) tr.className = 'new-row';
+    tr.innerHTML = `
+      <td><span class="log-type log-${e.type}">${e.type}</span></td>
+      <td>${e.action}</td>
+      <td>${e.building}</td>
+      <td style="text-align:right;"><span class="log-saving ${e.saved < 0 ? 'cost' : ''}">${e.saved > 0 ? '+€'+e.saved : (e.saved === 0 ? '—' : '−€'+Math.abs(e.saved))}</span></td>
+      <td>${e.date}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ============================================================
+// RENDER: savings panel
+// ============================================================
+function renderSavings() {
+  const total = savings.total();
+  document.getElementById('totalSavings').textContent = '€' + total.toLocaleString();
+
+  const visible = buildings.filter(b => b.phase <= currentPhase);
+  const max = Math.max(...visible.map(b => savings.byBuilding[b.id] || 1), 1);
+
+  const container = document.getElementById('savingsBars');
+  container.innerHTML = '';
+  visible.forEach(b => {
+    const v = savings.byBuilding[b.id] || 0;
+    const pct = Math.max(2, Math.round((v / max) * 100));
+    const color = v > 800 ? 'var(--green)' : v > 200 ? 'var(--amber)' : 'var(--stone-hi)';
+    const row = document.createElement('div');
+    row.className = 'sbar-row';
+    row.innerHTML = `
+      <span class="sbar-label">${b.name.split(' ')[0]}</span>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${pct}%;background:${color};"></div></div>
+      <span class="sbar-val">€${v.toLocaleString()}</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ============================================================
+// PHASE TOGGLE
+// ============================================================
+document.querySelectorAll('.phase-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.phase-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentPhase = parseInt(btn.dataset.phase);
+    document.getElementById('phaseStat').textContent = currentPhase === 0 ? 'Phase 0 — Months 1-2' : 'Phase 1 — Months 3-5';
+
+    // simulate phase-1 cohort already producing some savings
+    if (currentPhase === 1) {
+      savings.byBuilding[2] = 487;
+      savings.byBuilding[3] = 312;
+      savings.byBuilding[4] = 264;
+      document.getElementById('sensorsOnline').textContent = '105 / 105';
+    } else {
+      savings.byBuilding[2] = 0;
+      savings.byBuilding[3] = 0;
+      savings.byBuilding[4] = 0;
+      document.getElementById('sensorsOnline').textContent = '42 / 42';
     }
-    updateGauges(b.boiler, b.insulation, b.vent);
-    updateMetrics();
-    drawTrend();
-    drawAllSparks();
+
+    // ensure active building still visible
+    const visIds = buildings.filter(b => b.phase <= currentPhase).map(b => b.id);
+    if (!visIds.includes(activeBuilding)) {
+      activeBuilding = visIds[0];
+      applyBuilding(buildings.find(b => b.id === activeBuilding));
+    }
+    renderBuildings();
+    renderSavings();
   });
 });
 
-// ── Clamp ──
-function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
-
-// ── Sensor Status Logic ──
-function co2Status(v) {
-  if(v<600) return { label:'Optimal', color:'var(--green)', bg:'var(--green-dim)' };
-  if(v<900) return { label:'Elevated', color:'var(--amber)', bg:'var(--amber-dim)' };
-  return { label:'Alert', color:'var(--red)', bg:'var(--red-dim)' };
+// ============================================================
+// MODAL
+// ============================================================
+let currentAlert = null;
+function openModal(a) {
+  if (a.resolved) return;
+  currentAlert = a;
+  document.getElementById('modalTag').textContent =
+    a.severity === 'high' ? 'Anomaly · Predictive' : 'Sensor · Information';
+  document.getElementById('modalTitle').textContent = a.title + ' — ' + a.target;
+  document.getElementById('modalDetail').textContent = a.detail;
+  document.getElementById('modalRec').textContent = a.rec;
+  document.getElementById('modalReactive').textContent = '€' + a.reactive;
+  document.getElementById('modalPreventive').textContent = '€' + a.preventive;
+  const saved = a.reactive - a.preventive;
+  const actBtn = document.getElementById('modalAct');
+  actBtn.textContent = `Schedule with Rovian — €${saved} saved`;
+  actBtn.disabled = false;
+  document.getElementById('modal').classList.add('open');
 }
-function tempStatus(v) {
-  if(v>=19&&v<=24) return { label:'Comfort', color:'var(--green)', bg:'var(--green-dim)' };
-  if(v>=16&&v<=28) return { label:'Outside Range', color:'var(--amber)', bg:'var(--amber-dim)' };
-  return { label:'Thermal Alert', color:'var(--red)', bg:'var(--red-dim)' };
-}
-function humidStatus(v) {
-  if(v>=40&&v<=60) return { label:'Ideal', color:'var(--green)', bg:'var(--green-dim)' };
-  if(v>=30&&v<=70) return { label:'Monitor', color:'var(--amber)', bg:'var(--amber-dim)' };
-  return { label:'Risk', color:'var(--red)', bg:'var(--red-dim)' };
-}
 
-function updateMetrics() {
-  const co2 = co2Status(state.co2);
-  document.getElementById('co2Val').textContent = Math.round(state.co2);
-  document.getElementById('co2Val').style.color = co2.color;
-  document.getElementById('co2Badge').textContent = co2.label;
-  document.getElementById('co2Badge').style.background = co2.bg;
-  document.getElementById('co2Badge').style.color = co2.color;
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalDismiss').addEventListener('click', closeModal);
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-  const tmp = tempStatus(state.temp);
-  document.getElementById('tempVal').textContent = state.temp.toFixed(1);
-  document.getElementById('tempVal').style.color = tmp.color;
-  document.getElementById('tempBadge').textContent = tmp.label;
-  document.getElementById('tempBadge').style.background = tmp.bg;
-  document.getElementById('tempBadge').style.color = tmp.color;
+document.getElementById('modalAct').addEventListener('click', () => {
+  if (!currentAlert) return;
+  const a = currentAlert;
+  const saved = a.reactive - a.preventive;
 
-  const hum = humidStatus(state.humid);
-  document.getElementById('humidVal').textContent = Math.round(state.humid);
-  document.getElementById('humidVal').style.color = hum.color;
-  document.getElementById('humidBadge').textContent = hum.label;
-  document.getElementById('humidBadge').style.background = hum.bg;
-  document.getElementById('humidBadge').style.color = hum.color;
+  // resolve the alert
+  a.resolved = true;
+  a.new = false;
 
-  document.getElementById('energyVal').textContent = state.energy.toFixed(1);
-
-  // Bottom bars for accent colors
-  const cards = document.querySelectorAll('.metric-card');
-  [co2.color, tmp.color, hum.color].forEach((c,i) => {
-    const bar = cards[i]?.querySelector('[style*="bottom:0"]');
-    if(bar) bar.style.background = c;
+  // log new maintenance row
+  logEntries.unshift({
+    type: 'proactive',
+    action: a.title + ' — preventive intervention scheduled',
+    building: a.target.split(' elevator')[0].split(' stairwell')[0],
+    saved: saved,
+    date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short' }),
+    isNew: true,
   });
-}
 
-// ── Simulate ──
-function simulate() {
-  const spike = Math.random() < 0.04;
-  state.co2 += (Math.random()-0.48) * (spike?70:12);
-  state.co2 = clamp(state.co2, 300, 1300);
-  state.temp += (Math.random()-0.49) * (spike?1.8:0.25);
-  state.temp = clamp(state.temp, 12, 34);
-  state.humid += (Math.random()-0.48) * (spike?7:1.8);
-  state.humid = clamp(state.humid, 18, 90);
-  state.energy += (Math.random()-0.48) * (spike?1:0.15);
-  state.energy = clamp(state.energy, 0.5, 8);
+  // bump savings on the relevant building
+  const targetBld = buildings.find(b => a.target.includes(b.name));
+  if (targetBld) {
+    savings.byBuilding[targetBld.id] = (savings.byBuilding[targetBld.id] || 0) + saved;
+  }
 
-  history.co2.push(state.co2);
-  history.temp.push(state.temp);
-  history.humid.push(state.humid);
-  history.energy.push(state.energy);
-  if(history.co2.length>maxHist){ history.co2.shift(); history.temp.shift(); history.humid.shift(); history.energy.shift(); }
+  // animate savings ticker
+  const sa = document.getElementById('totalSavings');
+  sa.classList.add('bump');
+  setTimeout(() => sa.classList.remove('bump'), 400);
 
-  // Increment readings counter
-  const el = document.getElementById('readingsToday');
-  el.textContent = (parseInt(el.textContent.replace(/,/g,'')) + Math.floor(Math.random()*4+1)).toLocaleString();
+  closeModal();
+  renderAlerts();
+  renderLog();
+  renderSavings();
 
-  updateMetrics();
-  drawTrend();
-  drawAllSparks();
-}
+  // toast
+  const toast = document.getElementById('toast');
+  document.getElementById('toastTitle').textContent = `+€${saved} saved`;
+  document.getElementById('toastBody').textContent = `Preventive intervention scheduled with Construccions Rovian. Logged to YTD savings.`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4500);
+});
 
-setInterval(simulate, 2000);
+// ============================================================
+// DEMO TRIGGER — simulates a fresh alert appearing
+// ============================================================
+document.getElementById('demoBtn').addEventListener('click', () => {
+  if (demoTriggered) return;
+  demoTriggered = true;
 
-// ── Sparkline Drawing ──
-function drawSpark(canvasId, data, color) {
+  const newAlert = {
+    id:'demo1', severity:'high', title:'Vibration anomaly', target:'Mallorca 247 elevator',
+    sensor:'Vibration + cycles · motor #1',
+    detail:'New: Bearing vibration just exceeded threshold on motor #1. Predicted failure window: 14–21 days. This is the worked example from the deck — try clicking the alert.',
+    rec:'Schedule preventive bearing replacement via Construccions Rovian. Expected downtime: 2 hours, off-peak.',
+    reactive:800, preventive:180, time:'just now', new:true, resolved:false
+  };
+  // remove any prior demo alert and the existing low-priority lighting timer to keep list tidy
+  alerts = alerts.filter(a => a.id !== 'demo1');
+  alerts.unshift(newAlert);
+
+  renderAlerts();
+
+  // briefly flash the demo button
+  const btn = document.getElementById('demoBtn');
+  btn.textContent = '✓ Sent — see sidebar';
+  btn.classList.add('disabled');
+  setTimeout(() => {
+    btn.textContent = '▸ Demo Alert';
+    btn.classList.remove('disabled');
+    demoTriggered = false;
+  }, 6000);
+});
+
+// ============================================================
+// CHARTS — sparkline
+// ============================================================
+function drawSpark(canvasId, baseValue, color, points = 28) {
   const c = document.getElementById(canvasId);
-  if(!c) return;
+  if (!c) return;
+  const dpr = window.devicePixelRatio || 1;
+  c.width = c.offsetWidth * dpr;
+  c.height = 36 * dpr;
   const ctx = c.getContext('2d');
-  c.width = c.offsetWidth * 2;
-  c.height = 64;
-  ctx.clearRect(0,0,c.width,c.height);
+  ctx.scale(dpr, dpr);
+  const w = c.offsetWidth, h = 36;
+  ctx.clearRect(0,0,w,h);
 
-  const slice = data.slice(-30);
-  if(slice.length<2) return;
-  const min = Math.min(...slice);
-  const max = Math.max(...slice);
-  const range = max-min || 1;
+  const data = [];
+  for (let i = 0; i < points; i++) {
+    data.push(baseValue + (Math.random()-0.5) * baseValue * 0.4);
+  }
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+
+  // gradient fill
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, color.replace('var(--', '').includes('green') ? 'rgba(61,220,132,0.35)' : color.includes('amber') ? 'rgba(232,169,37,0.35)' : 'rgba(232,69,69,0.3)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
 
   ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 6) - 3;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  // line stroke
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  for(let i=0;i<slice.length;i++){
-    const x = (c.width/(slice.length-1))*i;
-    const y = c.height - 4 - ((slice[i]-min)/range)*(c.height-8);
-    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-  }
+  ctx.lineWidth = 1.4;
   ctx.stroke();
 
-  // Fill under
-  const lastX = (c.width/(slice.length-1))*(slice.length-1);
-  const lastY = c.height - 4 - ((slice[slice.length-1]-min)/range)*(c.height-8);
-  ctx.lineTo(lastX, c.height);
-  ctx.lineTo(0, c.height);
+  // fill below
+  ctx.lineTo(w, h);
+  ctx.lineTo(0, h);
   ctx.closePath();
-  ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb','rgba');
+  ctx.fillStyle = grad;
   ctx.fill();
 }
 
 function drawAllSparks() {
-  const co2c = co2Status(state.co2).color;
-  const tc = tempStatus(state.temp).color;
-  const hc = humidStatus(state.humid).color;
-  // Convert CSS var refs to actual colors for canvas
-  const colorMap = {
-    'var(--green)': '#3ddc84',
-    'var(--amber)': '#e8a925',
-    'var(--red)': '#e84545',
-  };
-  drawSpark('sparkCo2', history.co2, colorMap[co2c]||'#3ddc84');
-  drawSpark('sparkTemp', history.temp, colorMap[tc]||'#3ddc84');
-  drawSpark('sparkHumid', history.humid, colorMap[hc]||'#3ddc84');
-  drawSpark('sparkEnergy', history.energy, '#e8a925');
+  const b = buildings.find(x => x.id === activeBuilding) || buildings[0];
+  drawSpark('sparkElec', b.sensors.elec, '#3ddc84');
+  drawSpark('sparkWater', 1, '#3ddc84');
+  drawSpark('sparkLift', b.sensors.lift / 5, b.sensors.lift >= 90 ? '#3ddc84' : '#e8a925');
+  drawSpark('sparkAir', b.sensors.air, b.sensors.air < 3 ? '#3ddc84' : '#e8a925');
 }
 
-// ── Trend Chart ──
+// ============================================================
+// CHARTS — main trend
+// ============================================================
 function drawTrend() {
-  const c = document.getElementById('trendChart');
+  const c = document.getElementById('trendCanvas');
+  if (!c) return;
+  const dpr = window.devicePixelRatio || 1;
+  c.width = c.offsetWidth * dpr;
+  c.height = 280 * dpr;
   const ctx = c.getContext('2d');
-  c.width = c.offsetWidth * 2;
-  c.height = 440;
-  const w = c.width, h = c.height;
+  ctx.scale(dpr, dpr);
+  const w = c.offsetWidth, h = 280;
   ctx.clearRect(0,0,w,h);
 
-  // Grid
+  // grid lines
   ctx.strokeStyle = 'rgba(232,226,212,0.04)';
   ctx.lineWidth = 1;
-  for(let i=0;i<6;i++){
-    const y = (h/6)*i + 10;
-    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
-  }
-  // Time labels
-  ctx.fillStyle = 'rgba(138,133,120,0.5)';
-  ctx.font = '18px "DM Mono"';
-  const labels = ['00:00','04:00','08:00','12:00','16:00','20:00','Now'];
-  labels.forEach((l,i) => {
-    ctx.fillText(l, (w/(labels.length-1))*i, h-4);
-  });
-
-  function line(data, min, max, color) {
-    if(data.length<2) return;
+  for (let i = 1; i < 4; i++) {
+    const y = (i / 4) * h;
     ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    const range = max-min || 1;
-    for(let i=0;i<data.length;i++){
-      const x = (w/(data.length-1))*i;
-      const y = h - 30 - ((data[i]-min)/range)*(h-50);
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // Build a daily curve — baseline (high reactive use) and PULSE (lower with variance)
+  const points = 96; // 15-min intervals across 24h
+  const baseline = [];
+  const live = [];
+  for (let i = 0; i < points; i++) {
+    const hour = (i / points) * 24;
+    // baseline: typical communal lighting + pumps stay on always
+    const baseLighting = 1.6 + Math.sin((hour - 12) / 24 * Math.PI * 2) * 0.3;
+    const dailyLoad = 1.0 + Math.sin((hour - 14) / 24 * Math.PI * 2) * 0.5;
+    baseline.push(Math.max(0.4, baseLighting + dailyLoad + Math.random() * 0.2));
+
+    // PULSE: presence-aware lighting drops at night, pump runtime optimized
+    const presenceFactor = (hour > 7 && hour < 23) ? 0.65 : 0.18;
+    live.push(baseLighting * presenceFactor + dailyLoad * 0.6 + Math.random() * 0.15);
+  }
+
+  const allMax = Math.max(...baseline);
+  const allMin = 0;
+  const range = allMax - allMin;
+
+  function plot(arr, color, fill) {
+    ctx.beginPath();
+    arr.forEach((v, i) => {
+      const x = (i / (arr.length - 1)) * w;
+      const y = h - ((v - allMin) / range) * (h - 30) - 20;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    if (fill) {
+      ctx.lineTo(w, h - 20);
+      ctx.lineTo(0, h - 20);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.beginPath();
+      arr.forEach((v, i) => {
+        const x = (i / (arr.length - 1)) * w;
+        const y = h - ((v - allMin) / range) * (h - 30) - 20;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
     }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.6;
     ctx.stroke();
   }
 
-  line(history.co2, 250, 1300, '#3ddc84');
-  line(history.temp, 10, 36, '#e8a925');
-  line(history.humid, 15, 95, '#45a5e8');
+  // baseline first (dimmer, dashed)
+  ctx.setLineDash([4, 4]);
+  plot(baseline, '#8a8578', null);
+  ctx.setLineDash([]);
+
+  // PULSE live (filled green)
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, 'rgba(61,220,132,0.22)');
+  grad.addColorStop(1, 'rgba(61,220,132,0)');
+  plot(live, '#3ddc84', grad);
+
+  // x-axis hour labels
+  ctx.fillStyle = 'rgba(138,133,120,0.7)';
+  ctx.font = '10px DM Mono, monospace';
+  ['00:00','06:00','12:00','18:00','24:00'].forEach((label, i) => {
+    const x = (i / 4) * w;
+    ctx.fillText(label, Math.min(x, w - 30), h - 4);
+  });
 }
 
-drawTrend();
-drawAllSparks();
+// ============================================================
+// LIVE SIMULATION (subtle metric drift)
+// ============================================================
+function simulate() {
+  // increment readings counter
+  const el = document.getElementById('readingsToday');
+  el.textContent = (parseInt(el.textContent.replace(/,/g,'')) + Math.floor(Math.random()*3+1)).toLocaleString();
 
-// ── Gauges ──
+  // tiny drift on active building
+  const b = buildings.find(x => x.id === activeBuilding);
+  if (!b) return;
+  b.sensors.elec += (Math.random() - 0.5) * 0.3;
+  b.sensors.elec = Math.max(8, Math.min(28, b.sensors.elec));
+  b.sensors.air += (Math.random() - 0.5) * 0.2;
+  b.sensors.air = Math.max(0.5, Math.min(8, b.sensors.air));
+
+  // update only the visible card values without flashing
+  document.getElementById('elecVal').textContent = b.sensors.elec.toFixed(1);
+  document.getElementById('airVal').textContent = b.sensors.air.toFixed(1);
+
+  drawAllSparks();
+}
+setInterval(simulate, 2500);
+
+// ============================================================
+// GAUGE drawing
+// ============================================================
 function drawGauge(canvasId, pct, color) {
   const c = document.getElementById(canvasId);
-  if(!c) return;
+  if (!c) return;
+  const dpr = window.devicePixelRatio || 1;
+  c.width = 220 * dpr;
+  c.height = 140 * dpr;
   const ctx = c.getContext('2d');
-  c.width = 240;
-  c.height = 140;
-  const cx = 120, cy = 120, r = 90;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, 220, 140);
+
+  const cx = 110, cy = 110, r = 80;
   const startAngle = Math.PI;
   const endAngle = 2 * Math.PI;
 
-  // Background arc
+  // background arc
   ctx.beginPath();
   ctx.arc(cx, cy, r, startAngle, endAngle);
-  ctx.strokeStyle = '#1e1d1a';
-  ctx.lineWidth = 8;
+  ctx.strokeStyle = 'rgba(232,226,212,0.08)';
+  ctx.lineWidth = 6;
   ctx.stroke();
 
-  // Value arc
-  const valAngle = startAngle + (endAngle - startAngle) * (pct / 100);
+  // value arc
   ctx.beginPath();
-  ctx.arc(cx, cy, r, startAngle, valAngle);
+  ctx.arc(cx, cy, r, startAngle, startAngle + (endAngle - startAngle) * (pct / 100));
   ctx.strokeStyle = color;
-  ctx.lineWidth = 8;
-  ctx.lineCap = 'butt';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
   ctx.stroke();
 }
 
-function updateGauges(boiler, insulation, vent) {
-  const boilerColor = boiler > 80 ? '#3ddc84' : boiler > 60 ? '#e8a925' : '#e84545';
-  const insColor = insulation > 80 ? '#3ddc84' : insulation > 60 ? '#e8a925' : '#e84545';
-  const ventColor = vent > 80 ? '#3ddc84' : vent > 60 ? '#e8a925' : '#e84545';
-
-  drawGauge('gaugeBoiler', boiler, boilerColor);
-  drawGauge('gaugeInsulation', insulation, insColor);
-  drawGauge('gaugeVent', vent, ventColor);
-
-  document.getElementById('gaugeBoilerVal').textContent = boiler + '%';
-  document.getElementById('gaugeBoilerVal').style.color = boilerColor;
-  document.getElementById('gaugeInsVal').textContent = insulation + '%';
-  document.getElementById('gaugeInsVal').style.color = insColor;
-  document.getElementById('gaugeVentVal').textContent = vent + '%';
-  document.getElementById('gaugeVentVal').style.color = ventColor;
+function renderGauges() {
+  drawGauge('gaugeSave', 94, '#3ddc84');
+  drawGauge('gaugeProtect', 87, '#e8a925');
+  drawGauge('gaugeProve', 100, '#3ddc84');
 }
 
-updateGauges(92, 95, 97);
-updateMetrics();
+// ============================================================
+// INIT
+// ============================================================
+function redrawAllCanvases() {
+  drawAllSparks();
+  drawTrend();
+  renderGauges();
+}
+
+window.addEventListener('resize', () => {
+  redrawAllCanvases();
+});
+
+renderBuildings();
+renderAlerts();
+renderLog();
+renderSavings();
+applyBuilding(buildings[0]);
+renderGauges();
+
+// initial draw needs the layout to settle
+setTimeout(redrawAllCanvases, 50);
+
+// ESC closes modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
 </script>
 
 </body>
